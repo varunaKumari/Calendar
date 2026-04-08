@@ -13,6 +13,8 @@ interface MonthNavigatorProps {
   onPrev: () => void;
   onNext: () => void;
   isDark: boolean;
+  canGoNext: boolean;
+  canGoPrev: boolean;
 }
 
 const MonthNavigator: React.FC<MonthNavigatorProps> = ({
@@ -21,6 +23,8 @@ const MonthNavigator: React.FC<MonthNavigatorProps> = ({
   onPrev,
   onNext,
   isDark,
+  canGoNext,
+  canGoPrev,
 }) => {
   const [showPrevPreview, setShowPrevPreview] = useState(false);
   const [showNextPreview, setShowNextPreview] = useState(false);
@@ -30,26 +34,28 @@ const MonthNavigator: React.FC<MonthNavigatorProps> = ({
 
   return (
     <div className="flex items-center justify-between px-2 py-3">
-      {/* Previous button with mini calendar */}
+      {/* Previous button */}
       <div className="relative">
         <motion.button
-          onClick={onPrev}
-          onMouseEnter={() => setShowPrevPreview(true)}
+          onClick={canGoPrev ? onPrev : undefined}
+          onMouseEnter={() => {
+            if (canGoPrev) setShowPrevPreview(true);
+          }}
           onMouseLeave={() => setShowPrevPreview(false)}
           className="p-2 rounded-full transition-colors"
           style={{
-            backgroundColor: 'transparent',
+            opacity: canGoPrev ? 1 : 0.3,
+            cursor: canGoPrev ? 'pointer' : 'not-allowed',
           }}
-          whileHover={{ scale: 1.1, backgroundColor: isDark ? '#374151' : '#F3F4F6' }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={canGoPrev ? { scale: 1.1, backgroundColor: isDark ? '#374151' : '#F3F4F6' } : {}}
+          whileTap={canGoPrev ? { scale: 0.9 } : {}}
           aria-label="Previous month"
         >
           <ChevronLeft size={20} style={{ color: isDark ? '#D1D5DB' : '#4B5563' }} />
         </motion.button>
 
-        {/* Mini calendar preview - previous month */}
         <AnimatePresence>
-          {showPrevPreview && (
+          {showPrevPreview && canGoPrev && (
             <div className="absolute top-full left-0 mt-2 z-40">
               <MiniCalendar
                 year={prevDate.getFullYear()}
@@ -82,26 +88,28 @@ const MonthNavigator: React.FC<MonthNavigatorProps> = ({
         </p>
       </motion.div>
 
-      {/* Next button with mini calendar */}
+      {/* Next button */}
       <div className="relative">
         <motion.button
-          onClick={onNext}
-          onMouseEnter={() => setShowNextPreview(true)}
+          onClick={canGoNext ? onNext : undefined}
+          onMouseEnter={() => {
+            if (canGoNext) setShowNextPreview(true);
+          }}
           onMouseLeave={() => setShowNextPreview(false)}
           className="p-2 rounded-full transition-colors"
           style={{
-            backgroundColor: 'transparent',
+            opacity: canGoNext ? 1 : 0.3,
+            cursor: canGoNext ? 'pointer' : 'not-allowed',
           }}
-          whileHover={{ scale: 1.1, backgroundColor: isDark ? '#374151' : '#F3F4F6' }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={canGoNext ? { scale: 1.1, backgroundColor: isDark ? '#374151' : '#F3F4F6' } : {}}
+          whileTap={canGoNext ? { scale: 0.9 } : {}}
           aria-label="Next month"
         >
           <ChevronRight size={20} style={{ color: isDark ? '#D1D5DB' : '#4B5563' }} />
         </motion.button>
 
-        {/* Mini calendar preview - next month */}
         <AnimatePresence>
-          {showNextPreview && (
+          {showNextPreview && canGoNext && (
             <div className="absolute top-full right-0 mt-2 z-40">
               <MiniCalendar
                 year={nextDate.getFullYear()}

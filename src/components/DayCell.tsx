@@ -36,9 +36,6 @@ const DayCell: React.FC<DayCellProps> = ({
   isCurrentMonth,
   isToday,
   isSelected,
-  isInRange,
-  isRangeStart,
-  isRangeEnd,
   events,
   onClick,
   isWeekend,
@@ -48,53 +45,40 @@ const DayCell: React.FC<DayCellProps> = ({
 }) => {
   const dayNumber = format(date, 'd');
 
-  const getCellStyle = (): React.CSSProperties => {
-    if (isRangeStart || isRangeEnd) {
-      return {
-        backgroundColor: themeColors.selectStart,
-        color: themeColors.selectStartText,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-      };
-    }
-    if (isInRange) {
-      return {
-        backgroundColor: themeColors.selectRange,
-        color: themeColors.selectRangeText,
-      };
-    }
-    if (isSelected) {
-      return {
-        backgroundColor: themeColors.selectStart,
-        color: themeColors.selectStartText,
-        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-      };
-    }
-    if (isToday) {
-      return {
-        backgroundColor: 'transparent',
-        border: `2px solid ${themeColors.todayBg}`,
-        color: themeColors.todayBg,
-      };
-    }
-    return {};
-  };
+  // Determine cell background and text color
+  let cellBg = 'transparent';
+  let cellColor = isDark ? '#E5E7EB' : '#1F2937';
+  let cellBorder = 'none';
+  let cellShadow = 'none';
 
-  const getTextColor = (): string | undefined => {
-    if (isRangeStart || isRangeEnd || isSelected || isToday) return undefined;
-    if (!isCurrentMonth) return isDark ? '#4B5563' : '#D1D5DB';
-    if (isWeekend) return '#EF4444';
-    return isDark ? '#E5E7EB' : '#1F2937';
-  };
+  if (!isCurrentMonth) {
+    cellColor = isDark ? '#4B5563' : '#D1D5DB';
+  } else if (isSelected) {
+    // SELECTED = filled with accent color
+    cellBg = themeColors.selectStart;
+    cellColor = themeColors.selectStartText;
+    cellShadow = '0 2px 6px rgba(0,0,0,0.15)';
+  } else if (isToday) {
+    // TODAY = outline only
+    cellBg = 'transparent';
+    cellColor = themeColors.todayBg;
+    cellBorder = `2px solid ${themeColors.todayBg}`;
+  } else if (isWeekend) {
+    cellColor = '#EF4444';
+  }
 
   const getHolidayTextColor = (): string => {
-    if (isSelected || isRangeStart || isRangeEnd) return 'rgba(255,255,255,0.75)';
+    if (isSelected) return 'rgba(255,255,255,0.75)';
     if (isToday) return themeColors.todayBg;
     return isDark ? '#FCD34D' : '#B45309';
   };
 
-  const cellStyle = getCellStyle();
-  const hasCustomStyle = Object.keys(cellStyle).length > 0;
-  const textColor = getTextColor();
+  // Tooltip colors
+  const tooltipBg = isDark ? '#1F2937' : '#FFFFFF';
+  const tooltipBorder = isDark ? '#374151' : '#E5E7EB';
+  const tooltipShadow = isDark
+    ? '0 4px 16px rgba(0,0,0,0.4)'
+    : '0 4px 16px rgba(0,0,0,0.1)';
 
   return (
     <motion.button
@@ -106,24 +90,33 @@ const DayCell: React.FC<DayCellProps> = ({
         group cursor-pointer
         ${!isCurrentMonth ? 'opacity-40' : ''}
       `}
-      style={cellStyle}
+      style={{
+        backgroundColor: cellBg,
+        color: cellColor,
+        border: cellBorder,
+        boxShadow: cellShadow,
+      }}
       whileHover={{
         scale: 1.05,
-        backgroundColor: hasCustomStyle ? undefined : isDark ? '#374151' : '#F3F4F6',
+        backgroundColor: isSelected
+          ? themeColors.selectStart
+          : isToday
+          ? 'transparent'
+          : isDark
+          ? '#374151'
+          : '#F3F4F6',
       }}
       whileTap={{ scale: 0.92 }}
     >
       {/* Date number */}
       <span
         className="text-xs sm:text-sm font-bold leading-none"
-        style={{
-          color: hasCustomStyle ? (cellStyle.color as string) : textColor,
-        }}
+        style={{ color: cellColor }}
       >
         {dayNumber}
       </span>
 
-      {/* Holiday name written inside the cell */}
+      {/* Holiday name in cell */}
       {holiday && isCurrentMonth && (
         <span
           className="text-[5px] sm:text-[7px] leading-tight font-semibold text-center w-full px-0.5 mt-0.5 truncate"
@@ -147,15 +140,16 @@ const DayCell: React.FC<DayCellProps> = ({
         </div>
       )}
 
-      {/* Full holiday name tooltip on hover */}
+      {/* Holiday tooltip on hover */}
       {holiday && isCurrentMonth && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-30 pointer-events-none">
           <div
-            className="text-[10px] font-semibold px-2.5 py-1.5 rounded-lg shadow-xl whitespace-nowrap"
+            className="text-[10px] font-semibold px-2.5 py-1.5 rounded-lg whitespace-nowrap"
             style={{
-              backgroundColor: isDark ? '#1F2937' : '#111827',
-              color: '#FCD34D',
-              border: isDark ? '1px solid #374151' : 'none',
+              backgroundColor: tooltipBg,
+              color: isDark ? '#FCD34D' : '#92400E',
+              border: `1px solid ${tooltipBorder}`,
+              boxShadow: tooltipShadow,
             }}
           >
             {holiday.name}
@@ -163,14 +157,15 @@ const DayCell: React.FC<DayCellProps> = ({
         </div>
       )}
 
-      {/* Event tooltip on hover (only if no holiday) */}
+      {/* Event tooltip on hover */}
       {events.length > 0 && !holiday && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30 pointer-events-none">
           <div
-            className="text-xs rounded-lg px-3 py-2 shadow-xl whitespace-nowrap max-w-[200px]"
+            className="text-xs rounded-lg px-3 py-2 whitespace-nowrap max-w-[200px]"
             style={{
-              backgroundColor: isDark ? '#1F2937' : '#111827',
-              color: '#FFFFFF',
+              backgroundColor: tooltipBg,
+              border: `1px solid ${tooltipBorder}`,
+              boxShadow: tooltipShadow,
             }}
           >
             {events.slice(0, 3).map((e) => (
@@ -179,11 +174,19 @@ const DayCell: React.FC<DayCellProps> = ({
                   className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ backgroundColor: e.color }}
                 />
-                <span className="truncate">{e.title}</span>
+                <span
+                  className="truncate text-[11px] font-medium"
+                  style={{ color: isDark ? '#E5E7EB' : '#374151' }}
+                >
+                  {e.title}
+                </span>
               </div>
             ))}
             {events.length > 3 && (
-              <div className="text-gray-400 text-[10px] mt-1">
+              <div
+                className="text-[10px] mt-1"
+                style={{ color: isDark ? '#6B7280' : '#9CA3AF' }}
+              >
                 +{events.length - 3} more
               </div>
             )}

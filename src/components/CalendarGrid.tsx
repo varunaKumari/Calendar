@@ -66,7 +66,10 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           const dayOfWeek = day.getDay();
           const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
           const dateKey = formatDateKey(day);
-          const isSelected = selectedDate !== null && dateKey === selectedDate;
+
+          // STRICT comparison: only true if this exact date string matches
+          const isSelected = selectedDate !== null && selectedDate === dateKey;
+
           const holiday = getHolidayForDate(getMonth(day), getDate(day));
 
           return (

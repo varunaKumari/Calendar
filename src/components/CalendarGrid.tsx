@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { isSameMonth, isSameDay } from 'date-fns';
+import { isSameMonth, isSameDay, getDate, getMonth } from 'date-fns';
 import { dayNames, monthThemeColors } from '@/utils/monthImages';
 import { formatDateKey } from '@/utils/calendarHelpers';
+import { getHolidayForDate } from '@/utils/holidays';
 import { CalendarEvent } from '@/types';
 import DayCell from './DayCell';
 
@@ -14,6 +15,7 @@ interface CalendarGridProps {
   selectedDate: string | null;
   events: CalendarEvent[];
   onDateClick: (date: Date) => void;
+  isDark: boolean;
 }
 
 const CalendarGrid: React.FC<CalendarGridProps> = ({
@@ -23,6 +25,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   selectedDate,
   events,
   onDateClick,
+  isDark,
 }) => {
   const today = new Date();
   const monthDate = new Date(currentYear, currentMonth);
@@ -49,9 +52,10 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         {dayNames.map((name, i) => (
           <div
             key={name}
-            className={`text-center text-[10px] sm:text-xs font-bold py-2 ${
-              i >= 5 ? 'text-red-400' : 'text-gray-400'
-            }`}
+            className="text-center text-[10px] sm:text-xs font-bold py-2"
+            style={{
+              color: i >= 5 ? '#EF4444' : isDark ? '#6B7280' : '#9CA3AF',
+            }}
           >
             {name}
           </div>
@@ -63,6 +67,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
           const dateKey = formatDateKey(day);
           const isSelected = selectedDate !== null && dateKey === selectedDate;
+          const holiday = getHolidayForDate(getMonth(day), getDate(day));
 
           return (
             <DayCell
@@ -77,6 +82,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
               events={getEventsForDay(day)}
               onClick={onDateClick}
               isWeekend={isWeekend}
+              holiday={holiday}
+              isDark={isDark}
               themeColors={themeColors}
             />
           );

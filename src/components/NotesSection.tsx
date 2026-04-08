@@ -13,6 +13,7 @@ interface NotesSectionProps {
   selectedDate: string | null;
   monthKey: string;
   currentMonth: number;
+  isDark: boolean;
   onAddNote: (content: string, dateKey: string) => void;
   onDeleteNote: (id: string) => void;
 }
@@ -22,6 +23,7 @@ const NotesSection: React.FC<NotesSectionProps> = ({
   selectedDate,
   monthKey,
   currentMonth,
+  isDark,
   onAddNote,
   onDeleteNote,
 }) => {
@@ -52,20 +54,15 @@ const NotesSection: React.FC<NotesSectionProps> = ({
     }
   };
 
-  // Sort all notes: newest first
   const sortedNotes = [...allMonthNotes].sort(
-    (a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 
   const formatNoteDate = (note: CalendarNote): string => {
     const isGeneral = note.date.startsWith('general-');
-    if (isGeneral) {
-      return 'General';
-    }
+    if (isGeneral) return 'General';
     try {
-      const parsed = parseISO(note.date);
-      return format(parsed, 'EEEE, MMMM d, yyyy');
+      return format(parseISO(note.date), 'EEEE, MMMM d, yyyy');
     } catch {
       return note.date;
     }
@@ -79,13 +76,22 @@ const NotesSection: React.FC<NotesSectionProps> = ({
     }
   };
 
+  const darkBg = isDark
+    ? 'linear-gradient(135deg, #1F2937 0%, #1a2332 50%, #1F2937 100%)'
+    : theme.bgGradient;
+  const darkBorder = isDark ? '#374151' : theme.borderColor;
+  const darkNoteBg = isDark ? '#111827' : '#FFFFFF';
+  const darkNoteText = isDark ? '#E5E7EB' : '#374151';
+  const darkInputBg = isDark ? '#111827' : '#FFFFFF';
+  const darkInputText = isDark ? '#E5E7EB' : '#4B5563';
+
   return (
     <>
       <div
         className="shadow-lg border overflow-hidden h-full flex flex-col"
         style={{
-          background: theme.bgGradient,
-          borderColor: theme.borderColor,
+          background: darkBg,
+          borderColor: darkBorder,
           borderRadius: '0px',
         }}
       >
@@ -93,7 +99,9 @@ const NotesSection: React.FC<NotesSectionProps> = ({
         <div
           className="px-4 py-3 flex items-center gap-2"
           style={{
-            background: theme.headerGradient,
+            background: isDark
+              ? `linear-gradient(135deg, ${theme.accentColor}CC 0%, ${theme.accentColor}99 100%)`
+              : theme.headerGradient,
             borderRadius: '0px',
           }}
         >
@@ -120,7 +128,10 @@ const NotesSection: React.FC<NotesSectionProps> = ({
               borderRadius: '0px',
               ...(noteType === 'general'
                 ? { backgroundColor: theme.accentColor, color: 'white' }
-                : { backgroundColor: 'white', color: '#9CA3AF' }),
+                : {
+                    backgroundColor: isDark ? '#374151' : 'white',
+                    color: '#9CA3AF',
+                  }),
             }}
           >
             General
@@ -136,10 +147,13 @@ const NotesSection: React.FC<NotesSectionProps> = ({
               ...(noteType === 'date'
                 ? { backgroundColor: theme.accentColor, color: 'white' }
                 : hasDateSelection
-                ? { backgroundColor: 'white', color: '#9CA3AF' }
+                ? {
+                    backgroundColor: isDark ? '#374151' : 'white',
+                    color: '#9CA3AF',
+                  }
                 : {
-                    backgroundColor: '#F3F4F6',
-                    color: '#D1D5DB',
+                    backgroundColor: isDark ? '#1F2937' : '#F3F4F6',
+                    color: isDark ? '#4B5563' : '#D1D5DB',
                     cursor: 'not-allowed',
                   }),
             }}
@@ -159,10 +173,11 @@ const NotesSection: React.FC<NotesSectionProps> = ({
               onKeyDown={handleKeyDown}
               placeholder="Write a note..."
               rows={2}
-              className="flex-1 px-3 py-2 border text-sm focus:outline-none focus:ring-2 transition-all resize-none bg-white"
+              className="flex-1 px-3 py-2 border text-sm focus:outline-none focus:ring-2 transition-all resize-none"
               style={{
-                borderColor: theme.borderColor,
-                color: '#4B5563',
+                borderColor: darkBorder,
+                color: darkInputText,
+                backgroundColor: darkInputBg,
                 borderRadius: '0px',
               }}
             />
@@ -175,8 +190,8 @@ const NotesSection: React.FC<NotesSectionProps> = ({
                 ...(noteText.trim()
                   ? { backgroundColor: theme.accentColor, color: 'white' }
                   : {
-                      backgroundColor: '#E5E7EB',
-                      color: '#9CA3AF',
+                      backgroundColor: isDark ? '#374151' : '#E5E7EB',
+                      color: isDark ? '#6B7280' : '#9CA3AF',
                       cursor: 'not-allowed',
                     }),
               }}
@@ -188,18 +203,13 @@ const NotesSection: React.FC<NotesSectionProps> = ({
           </div>
         </div>
 
-        {/* Notes list - shows ALL notes for the month always */}
+        {/* Notes list */}
         <div className="flex-1 p-4 overflow-y-auto space-y-2 custom-scrollbar">
           {sortedNotes.length === 0 ? (
-            <div
-              className="text-center py-8"
-              style={{ color: theme.emptyColor }}
-            >
+            <div className="text-center py-8" style={{ color: isDark ? '#4B5563' : theme.emptyColor }}>
               <StickyNote size={36} className="mx-auto mb-2 opacity-50" />
               <p className="text-xs font-medium">No notes yet</p>
-              <p className="text-[10px] mt-1">
-                Start typing above to add one
-              </p>
+              <p className="text-[10px] mt-1">Start typing above to add one</p>
             </div>
           ) : (
             <AnimatePresence>
@@ -212,16 +222,20 @@ const NotesSection: React.FC<NotesSectionProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -50 }}
                     transition={{ delay: idx * 0.03 }}
-                    className="group bg-white p-3 shadow-sm hover:shadow-md transition-shadow"
+                    className="group p-3 shadow-sm hover:shadow-md transition-shadow"
                     style={{
                       borderWidth: 1,
-                      borderColor: theme.borderColor,
+                      borderColor: darkBorder,
                       borderRadius: '0px',
+                      backgroundColor: darkNoteBg,
                     }}
                   >
                     {/* Note content */}
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm text-gray-700 flex-1 whitespace-pre-wrap break-words">
+                      <p
+                        className="text-sm flex-1 whitespace-pre-wrap break-words"
+                        style={{ color: darkNoteText }}
+                      >
                         {note.content}
                       </p>
                       <motion.button
@@ -234,9 +248,15 @@ const NotesSection: React.FC<NotesSectionProps> = ({
                                 : note.content,
                           })
                         }
-                        className="p-1 opacity-0 group-hover:opacity-100 hover:bg-red-50 transition-all flex-shrink-0"
-                        style={{ borderRadius: '0px' }}
-                        whileHover={{ scale: 1.1 }}
+                        className="p-1 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                        style={{
+                          borderRadius: '0px',
+                          backgroundColor: 'transparent',
+                        }}
+                        whileHover={{
+                          scale: 1.1,
+                          backgroundColor: isDark ? '#7F1D1D' : '#FEE2E2',
+                        }}
                         whileTap={{ scale: 0.9 }}
                       >
                         <Trash2 size={12} className="text-red-400" />
@@ -251,18 +271,23 @@ const NotesSection: React.FC<NotesSectionProps> = ({
                           borderRadius: '0px',
                           ...(isGeneral
                             ? {
-                                backgroundColor: theme.badgeBg,
-                                color: theme.badgeText,
+                                backgroundColor: isDark ? '#1F2937' : theme.badgeBg,
+                                color: isDark ? theme.accentColor : theme.badgeText,
+                                border: isDark ? `1px solid ${theme.accentColor}40` : 'none',
                               }
                             : {
-                                backgroundColor: theme.accentLight,
+                                backgroundColor: isDark ? '#1F2937' : theme.accentLight,
                                 color: theme.accentColor,
+                                border: isDark ? `1px solid ${theme.accentColor}40` : 'none',
                               }),
                         }}
                       >
                         📌 {formatNoteDate(note)}
                       </span>
-                      <span className="text-[9px] text-gray-400">
+                      <span
+                        className="text-[9px]"
+                        style={{ color: isDark ? '#6B7280' : '#9CA3AF' }}
+                      >
                         Added: {formatNoteTime(note.createdAt)}
                       </span>
                     </div>

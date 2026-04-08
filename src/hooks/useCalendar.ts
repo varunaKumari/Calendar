@@ -15,6 +15,7 @@ export function useCalendar() {
     month: today.getMonth(),
   });
 
+  // Do NOT pre-select today — start with null
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const calendarDays = useMemo(
@@ -46,8 +47,10 @@ export function useCalendar() {
 
   const goToToday = useCallback(() => {
     const now = new Date();
+    // Use formatDateKey for consistent string-based date key
+    const todayKey = formatDateKey(now);
     setCurrentMonth({ year: now.getFullYear(), month: now.getMonth() });
-    setSelectedDate(formatDateKey(now));
+    setSelectedDate(todayKey);
   }, []);
 
   const goToDate = useCallback(

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { isSameMonth, isSameDay, getDate, getMonth } from 'date-fns';
+import { isSameMonth, getDate, getMonth } from 'date-fns';
 import { dayNames, monthThemeColors } from '@/utils/monthImages';
 import { formatDateKey } from '@/utils/calendarHelpers';
 import { getHolidayForDate } from '@/utils/holidays';
@@ -27,9 +27,11 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   onDateClick,
   isDark,
 }) => {
-  const today = new Date();
   const monthDate = new Date(currentYear, currentMonth);
   const theme = monthThemeColors[currentMonth] || monthThemeColors[0];
+
+  // Use string comparison for today to avoid timezone/isSameDay bugs
+  const todayKey = formatDateKey(new Date());
 
   const themeColors = {
     selectStart: theme.selectStart,
@@ -67,7 +69,8 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
           const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
           const dateKey = formatDateKey(day);
 
-          // STRICT comparison: only true if this exact date string matches
+          // Use string comparison — avoids all timezone/isSameDay issues
+          const isToday = dateKey === todayKey;
           const isSelected = selectedDate !== null && selectedDate === dateKey;
 
           const holiday = getHolidayForDate(getMonth(day), getDate(day));
@@ -77,7 +80,7 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
               key={idx}
               date={day}
               isCurrentMonth={isSameMonth(day, monthDate)}
-              isToday={isSameDay(day, today)}
+              isToday={isToday}
               isSelected={isSelected}
               isInRange={false}
               isRangeStart={false}

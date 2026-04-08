@@ -28,7 +28,7 @@
 
 | Light Mode | Dark Mode |
 |:---:|:---:|
-| ![Light Mode](https://via.placeholder.com/500x300/F1F5F9/111827?text=Light+Mode+Preview) | ![Dark Mode](https://via.placeholder.com/500x300/0F172A/F9FAFB?text=Dark+Mode+Preview) |
+| ![Light Mode](C:\Users\sd407\OneDrive\Desktop\modern-calendar\interactive-calendar\src\app) | ![Dark Mode](C:\Users\sd407\OneDrive\Desktop\modern-calendar\interactive-calendar\imageSrc) |
 
 > 💡 *Replace the placeholder images above with actual screenshots of your deployed app*
 

@@ -9,13 +9,17 @@ const MIN_YEAR = 1000;
 const MAX_YEAR = 3000;
 
 export function useCalendar() {
-  const today = new Date();
-  const [currentMonth, setCurrentMonth] = useState<MonthData>({
-    year: today.getFullYear(),
-    month: today.getMonth(),
+  // Lazy initializer: runs only on the client, never during SSR.
+  // This ensures new Date() always reflects the browser's local timezone,
+  // not the server's UTC timezone (which causes off-by-one day bugs on Vercel).
+  const [currentMonth, setCurrentMonth] = useState<MonthData>(() => {
+    const now = new Date();
+    return {
+      year: now.getFullYear(),
+      month: now.getMonth(),
+    };
   });
 
-  // Do NOT pre-select today — start with null
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const calendarDays = useMemo(

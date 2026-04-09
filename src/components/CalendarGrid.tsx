@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { isSameMonth, getDate, getMonth } from 'date-fns';
 import { dayNames, monthThemeColors } from '@/utils/monthImages';
 import { formatDateKey } from '@/utils/calendarHelpers';
@@ -30,8 +30,12 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
   const monthDate = new Date(currentYear, currentMonth);
   const theme = monthThemeColors[currentMonth] || monthThemeColors[0];
 
-  // Use string comparison for today to avoid timezone/isSameDay bugs
-  const todayKey = formatDateKey(new Date());
+  // ✅ FIX 1: Compute todayKey ONLY on client (avoids UTC vs local mismatch on Vercel)
+  const [todayKey, setTodayKey] = useState<string>('');
+
+  useEffect(() => {
+    setTodayKey(formatDateKey(new Date()));
+  }, []);
 
   const themeColors = {
     selectStart: theme.selectStart,
@@ -64,20 +68,21 @@ const CalendarGrid: React.FC<CalendarGridProps> = ({
         ))}
       </div>
       <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
-        {days.map((day, idx) => {
+        {days.map((day) => {
           const dayOfWeek = day.getDay();
           const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
           const dateKey = formatDateKey(day);
 
-          // Use string comparison — avoids all timezone/isSameDay issues
-          const isToday = dateKey === todayKey;
+          // ✅ FIX 2: Only mark today AFTER client mount (todayKey is '' during SSR)
+          const isToday = todayKey !== '' && dateKey === todayKey;
           const isSelected = selectedDate !== null && selectedDate === dateKey;
 
           const holiday = getHolidayForDate(getMonth(day), getDate(day));
 
           return (
             <DayCell
-              key={idx}
+              // ✅ FIX 3: Use dateKey as key so React doesn't reuse DOM nodes across months
+              key={dateKey}
               date={day}
               isCurrentMonth={isSameMonth(day, monthDate)}
               isToday={isToday}

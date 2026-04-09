@@ -45,21 +45,19 @@ const DayCell: React.FC<DayCellProps> = ({
 }) => {
   const dayNumber = format(date, 'd');
 
-  // Determine cell background and text color
   let cellBg = 'transparent';
   let cellColor = isDark ? '#E5E7EB' : '#1F2937';
-  let cellBorder = 'none';
+  // ✅ FIX: Always keep a 2px border (transparent by default) to prevent layout shifts
+  let cellBorder = '2px solid transparent';
   let cellShadow = 'none';
 
   if (!isCurrentMonth) {
     cellColor = isDark ? '#4B5563' : '#D1D5DB';
   } else if (isSelected) {
-    // SELECTED = filled with accent color
     cellBg = themeColors.selectStart;
     cellColor = themeColors.selectStartText;
     cellShadow = '0 2px 6px rgba(0,0,0,0.15)';
   } else if (isToday) {
-    // TODAY = outline only
     cellBg = 'transparent';
     cellColor = themeColors.todayBg;
     cellBorder = `2px solid ${themeColors.todayBg}`;
@@ -73,7 +71,6 @@ const DayCell: React.FC<DayCellProps> = ({
     return isDark ? '#FCD34D' : '#B45309';
   };
 
-  // Tooltip colors
   const tooltipBg = isDark ? '#1F2937' : '#FFFFFF';
   const tooltipBorder = isDark ? '#374151' : '#E5E7EB';
   const tooltipShadow = isDark
@@ -85,7 +82,7 @@ const DayCell: React.FC<DayCellProps> = ({
       onClick={() => onClick(date)}
       className={`
         relative flex flex-col items-center justify-start p-1 sm:p-1.5
-        rounded-xl transition-all duration-200
+        rounded-xl transition-colors duration-200
         min-h-[50px] sm:min-h-[68px]
         group cursor-pointer
         ${!isCurrentMonth ? 'opacity-40' : ''}
@@ -108,7 +105,6 @@ const DayCell: React.FC<DayCellProps> = ({
       }}
       whileTap={{ scale: 0.92 }}
     >
-      {/* Date number */}
       <span
         className="text-xs sm:text-sm font-bold leading-none"
         style={{ color: cellColor }}
@@ -116,7 +112,6 @@ const DayCell: React.FC<DayCellProps> = ({
         {dayNumber}
       </span>
 
-      {/* Holiday name in cell */}
       {holiday && isCurrentMonth && (
         <span
           className="text-[5px] sm:text-[7px] leading-tight font-semibold text-center w-full px-0.5 mt-0.5 truncate"
@@ -126,7 +121,6 @@ const DayCell: React.FC<DayCellProps> = ({
         </span>
       )}
 
-      {/* Event dots */}
       {events.length > 0 && (
         <div className="flex gap-0.5 mt-0.5 flex-wrap justify-center">
           {events.slice(0, 3).map((event) => (
@@ -140,7 +134,6 @@ const DayCell: React.FC<DayCellProps> = ({
         </div>
       )}
 
-      {/* Holiday tooltip on hover */}
       {holiday && isCurrentMonth && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-30 pointer-events-none">
           <div
@@ -157,7 +150,6 @@ const DayCell: React.FC<DayCellProps> = ({
         </div>
       )}
 
-      {/* Event tooltip on hover */}
       {events.length > 0 && !holiday && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30 pointer-events-none">
           <div

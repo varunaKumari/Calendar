@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   startOfMonth,
@@ -10,9 +10,9 @@ import {
   eachDayOfInterval,
   format,
   isSameMonth,
-  isSameDay,
 } from 'date-fns';
 import { monthNames } from '@/utils/monthImages';
+import { formatDateKey } from '@/utils/calendarHelpers';
 
 interface MiniCalendarProps {
   year: number;
@@ -26,8 +26,14 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ year, month, isDark }) => {
   const calStart = startOfWeek(monthStart, { weekStartsOn: 1 });
   const calEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
   const days = eachDayOfInterval({ start: calStart, end: calEnd });
-  const today = new Date();
   const dayHeaders = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  // ✅ FIX: Compute today only on client
+  const [todayKey, setTodayKey] = useState<string>('');
+
+  useEffect(() => {
+    setTodayKey(formatDateKey(new Date()));
+  }, []);
 
   return (
     <motion.div
@@ -41,7 +47,6 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ year, month, isDark }) => {
       exit={{ opacity: 0, scale: 0.8, y: 5 }}
       transition={{ duration: 0.15 }}
     >
-      {/* Month name */}
       <p
         className="text-xs font-bold text-center mb-2"
         style={{ color: isDark ? '#F3F4F6' : '#111827' }}
@@ -49,7 +54,6 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ year, month, isDark }) => {
         {monthNames[month]} {year}
       </p>
 
-      {/* Day headers */}
       <div className="grid grid-cols-7 gap-0">
         {dayHeaders.map((d, i) => (
           <div
@@ -62,11 +66,11 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({ year, month, isDark }) => {
         ))}
       </div>
 
-      {/* Days grid */}
       <div className="grid grid-cols-7 gap-0">
         {days.map((day, idx) => {
           const inMonth = isSameMonth(day, monthStart);
-          const isToday = isSameDay(day, today);
+          const dayKey = formatDateKey(day);
+          const isToday = todayKey !== '' && dayKey === todayKey;
           const dayOfWeek = day.getDay();
           const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 

@@ -11,7 +11,7 @@
 
 <br />
 
-[🌐 Live Demo](https://calendar-gray-beta.vercel.app/) · [🎬 Video Walkthrough](https://youtu.be/Hu2_m8wFVz4) · [📝 Report Bug](https://github.com/varunaKumari/Calendar/issues)
+[🌐 Live Demo](https://calendar-gray-beta.vercel.app/) · [🎬 Video Walkthrough](https://youtu.be/VsKb_ZiVniM) · [📝 Report Bug](https://github.com/varunaKumari/Calendar/issues)
 
 <br />
 
